@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RETAILER
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  BLOCKED
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PARTIALLY_FULFILLED
+  READY_FOR_PICKUP
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  PENDING
+  FULFILLED
+  PARTIALLY_FULFILLED
+  REJECTED
+}
+
+enum FulfillmentType {
+  PICKUP
+  DELIVERY
+}
+
+enum InvoiceStatus {
+  UPLOADED
+  PROCESSING
+  NEEDS_REVIEW
+  CONFIRMED
+  REJECTED
+}
+
+enum MatchMethod {
+  SKU
+  ALIAS
+  FUZZY
+  LLM
+  NEW
+}
+
+model User {
+  id           String     @id @default(cuid())
+  phone        String     @unique
+  name         String
+  businessName String?
+  role         Role       @default(RETAILER)
+  status       UserStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  orders             Order[]
+  customPrices       UserProductPrice[]
+  processedInvoices  Invoice[]
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+  invoices Invoice[]
+
+  @@map("brands")
+}
+
+model Product {
+  id                  String   @id @default(cuid())
+  brandId             String
+  name                String
+  variant             String?
+  sku                 String   @unique
+  aliases             String[]
+  imageUrl            String?
+  category            String?
+  currentStock        Int      @default(0)
+  lowStockThreshold   Int      @default(10)
+  defaultSellingPrice Decimal  @db.Decimal(10, 2)
+  lastPurchasePrice   Decimal? @db.Decimal(10, 2)
+  isAiGenerated       Boolean  @default(false)
+  needsReview         Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  brand        Brand              @relation(fields: [brandId], references: [id])
+  orderItems   OrderItem[]
+  customPrices UserProductPrice[]
+  invoiceItems InvoiceItem[]
+
+  @@map("products")
+}
+
+model UserProductPrice {
+  id          String  @id @default(cuid())
+  userId      String
+  productId   String
+  customPrice Decimal @db.Decimal(10, 2)
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("user_product_prices")
+}
+
+model Order {
+  id              String          @id @default(cuid())
+  retailerId      String
+  status          OrderStatus     @default(PENDING)
+  fulfillmentType FulfillmentType @default(PICKUP)
+  deliveryAddress String?
+  adminNote       String?
+  totalAmount     Decimal         @db.Decimal(10, 2)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  retailer   User        @relation(fields: [retailerId], references: [id])
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String          @id @default(cuid())
+  orderId             String
+  productId           String
+  requestedQuantity   Int
+  fulfilledQuantity   Int             @default(0)
+  priceAtTimeOfOrder  Decimal         @db.Decimal(10, 2)
+  status              OrderItemStatus @default(PENDING)
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Invoice {
+  id                     String        @id @default(cuid())
+  brandId                String
+  invoiceNumber          String
+  invoiceDate            DateTime
+  supplierName           String
+  fileUrl                String
+  rawOcrText             String?
+  extractedJson          Json?
+  overallConfidenceScore Float?
+  status                 InvoiceStatus @default(UPLOADED)
+  processedById          String?
+  totalAmount            Decimal?      @db.Decimal(10, 2)
+  gstAmount              Decimal?      @db.Decimal(10, 2)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  brand       Brand         @relation(fields: [brandId], references: [id])
+  processedBy User?         @relation(fields: [processedById], references: [id])
+  items       InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id                  String      @id @default(cuid())
+  invoiceId           String
+  rawProductName      String
+  matchedProductId    String?
+  matchedProductName  String?
+  matchMethod         MatchMethod?
+  confidenceScore     Float?
+  quantity            Int
+  purchasePrice       Decimal     @db.Decimal(10, 2)
+  gstPercent          Float?
+  isNewProduct        Boolean     @default(false)
+  needsReview         Boolean     @default(false)
+
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  matchedProduct Product? @relation(fields: [matchedProductId], references: [id])
+
+  @@map("invoice_items")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  timestamp  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
