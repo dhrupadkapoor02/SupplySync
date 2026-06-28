@@ -4,6 +4,13 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import authRoutes from "./modules/auth/auth.route.js";
+import brandRoutes from "./modules/brands/brand.routes.js";
+import productRoutes from "./modules/products/product.routes.js";
+import {
+  authenticate,
+  authorizeAdmin,
+  authorizeApprovedRetailer,
+} from "./modules/auth/auth.middleware.js";
 
 dotenv.config();
 
@@ -23,9 +30,23 @@ app.use(
 
 // Parse JSON request bodies
 app.use(express.json());
-
 // Request logging
 app.use(morgan("dev"));
+
+//Public Routes
+app.use("/api/auth", authRoutes);
+
+//Admin only Routes
+app.use("/api/admin/brands", authenticate, authorizeAdmin, brandRoutes);
+app.use("/api/admin/products", authenticate, authorizeAdmin, productRoutes);
+
+//Retailer Routes
+app.use(
+  "/api/products",
+  authenticate,
+  authorizeApprovedRetailer,
+  productRoutes,
+);
 
 // Health check route
 app.get("/health", (req, res) => {
@@ -34,7 +55,7 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-app.use("/api/auth", authRoutes);
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
