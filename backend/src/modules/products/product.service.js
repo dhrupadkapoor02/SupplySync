@@ -8,7 +8,7 @@ function generateSKU(brandName, productName) {
 }
 
 export async function createProduct(data) {
-  const brand = await prisma.product.findUnique({
+  const brand = await prisma.brand.findUnique({
     where: { id: data.brandId },
   });
 

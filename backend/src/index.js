@@ -7,6 +7,10 @@ import authRoutes from "./modules/auth/auth.route.js";
 import brandRoutes from "./modules/brands/brand.routes.js";
 import productRoutes from "./modules/products/product.routes.js";
 import {
+  adminOrderRouter,
+  retailerOrderRouter,
+} from "./modules/orders/order.routes.js";
+import {
   authenticate,
   authorizeAdmin,
   authorizeApprovedRetailer,
@@ -39,6 +43,7 @@ app.use("/api/auth", authRoutes);
 //Admin only Routes
 app.use("/api/admin/brands", authenticate, authorizeAdmin, brandRoutes);
 app.use("/api/admin/products", authenticate, authorizeAdmin, productRoutes);
+app.use("/api/admin/orders", authenticate, authorizeAdmin, adminOrderRouter);
 
 //Retailer Routes
 app.use(
@@ -46,6 +51,12 @@ app.use(
   authenticate,
   authorizeApprovedRetailer,
   productRoutes,
+);
+app.use(
+  "/api/orders",
+  authenticate,
+  authorizeApprovedRetailer,
+  retailerOrderRouter,
 );
 
 // Health check route
