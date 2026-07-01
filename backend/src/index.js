@@ -6,6 +6,7 @@ import morgan from "morgan";
 import authRoutes from "./modules/auth/auth.route.js";
 import brandRoutes from "./modules/brands/brand.routes.js";
 import productRoutes from "./modules/products/product.routes.js";
+import invoiceRoutes from './modules/invoices/invoice.routes.js';
 import {
   adminOrderRouter,
   retailerOrderRouter,
@@ -44,6 +45,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin/brands", authenticate, authorizeAdmin, brandRoutes);
 app.use("/api/admin/products", authenticate, authorizeAdmin, productRoutes);
 app.use("/api/admin/orders", authenticate, authorizeAdmin, adminOrderRouter);
+app.use('/api/admin/invoices', authenticate, authorizeAdmin, invoiceRoutes);
 
 //Retailer Routes
 app.use(

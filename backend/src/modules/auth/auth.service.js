@@ -62,7 +62,7 @@ export function generateAccessToken(user) {
       role: user.role,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "15m" },
+    { expiresIn: "55m" },
   );
 }
 
