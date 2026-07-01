@@ -1,11 +1,40 @@
-function App() {
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './features/auth/AuthContext.jsx';
+import LoginPage from './features/auth/LoginPage.jsx';
+import ProtectedRoute from './features/auth/ProtectedRoute.jsx';
+import AdminLayout from './components/layout/AdminLayout.jsx';
+
+// Lazy-loaded admin pages (we will create these next)
+import AdminDashboard from './features/admin/AdminDashboard.jsx';
+
+export default function App() {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">SupplySync</h1>
-        <p className="text-gray-500 mt-2">Platform is running</p>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminLayout>
+              <Routes>
+                <Route path="/" element={<AdminDashboard />} />
+              </Routes>
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          user?.role === 'ADMIN'
+            ? <Navigate to="/admin" replace />
+            : <Navigate to="/login" replace />
+        }
+      />
+    </Routes>
   );
 }
-export default App;
