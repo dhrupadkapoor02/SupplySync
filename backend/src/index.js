@@ -4,8 +4,14 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import authRoutes from "./modules/auth/auth.route.js";
-import brandRoutes from "./modules/brands/brand.routes.js";
-import productRoutes from "./modules/products/product.routes.js";
+import {
+  adminBrandRouter,
+  retailerBrandRouter,
+} from "./modules/brands/brand.routes.js";
+import {
+  adminProductRouter,
+  retailerProductRouter,
+} from "./modules/products/product.routes.js";
 import invoiceRoutes from "./modules/invoices/invoice.routes.js";
 import retailerRoutes from "./modules/retailers/retailer.routes.js";
 import {
@@ -43,8 +49,13 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 
 //Admin only Routes
-app.use("/api/admin/brands", authenticate, authorizeAdmin, brandRoutes);
-app.use("/api/admin/products", authenticate, authorizeAdmin, productRoutes);
+app.use("/api/admin/brands", authenticate, authorizeAdmin, adminBrandRouter);
+app.use(
+  "/api/admin/products",
+  authenticate,
+  authorizeAdmin,
+  adminProductRouter,
+);
 app.use("/api/admin/orders", authenticate, authorizeAdmin, adminOrderRouter);
 app.use("/api/admin/invoices", authenticate, authorizeAdmin, invoiceRoutes);
 app.use("/api/admin/retailers", authenticate, authorizeAdmin, retailerRoutes);
@@ -54,13 +65,19 @@ app.use(
   "/api/products",
   authenticate,
   authorizeApprovedRetailer,
-  productRoutes,
+  retailerProductRouter,
 );
 app.use(
   "/api/orders",
   authenticate,
   authorizeApprovedRetailer,
   retailerOrderRouter,
+);
+app.use(
+  "/api/brands",
+  authenticate,
+  authorizeApprovedRetailer,
+  retailerBrandRouter,
 );
 
 // Health check route

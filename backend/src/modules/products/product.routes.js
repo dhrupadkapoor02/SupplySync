@@ -2,17 +2,18 @@ import { Router } from "express";
 
 import * as productController from "./product.controller.js";
 
-const router = Router();
+// Admin: full CRUD + inventory management
+export const adminProductRouter = Router();
+adminProductRouter.post("/", productController.createProduct);
+adminProductRouter.get("/", productController.getProducts);
+adminProductRouter.get("/low-stock", productController.getLowStockProducts);
+adminProductRouter.get("/:id", productController.getProductById);
+adminProductRouter.put("/:id", productController.updateProduct);
+adminProductRouter.post("/:id/custom-price", productController.setCustomPrice);
 
-router.post("/", productController.createProduct);
-router.get("/", productController.getProducts);
-router.get("/low-stock", productController.getLowStockProducts);
-router.get("/:id", productController.getProductById);
-router.put("/:id", productController.updateProduct);
+// Retailer: read-only catalog browsing
+export const retailerProductRouter = Router();
+retailerProductRouter.get("/retailer/catalog", productController.getProductsForRetailer);
+retailerProductRouter.get("/:id", productController.getProductById);
 
-router.post("/:id/custom-price", productController.setCustomPrice);
-
-// Retailer Route
-router.get("/retailer/catalog", productController.getProductsForRetailer);
-
-export default router;
+export default adminProductRouter;

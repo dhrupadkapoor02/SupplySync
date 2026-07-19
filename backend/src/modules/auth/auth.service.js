@@ -60,6 +60,7 @@ export function generateAccessToken(user) {
       userId: user.id,
       phone: user.phone,
       role: user.role,
+      status: user.status,
     },
     process.env.JWT_SECRET,
     { expiresIn: "55m" },

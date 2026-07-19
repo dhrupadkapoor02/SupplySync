@@ -13,7 +13,7 @@ export async function createProduct(data) {
   });
 
   if (!brand) {
-    throw new Error("Brand_Not_Found");
+    throw new Error("BRAND_NOT_FOUND");
   }
 
   const sku = data.sku || generateSKU(brand.name, data.name);
@@ -21,7 +21,7 @@ export async function createProduct(data) {
   const existing = await prisma.product.findUnique({ where: { sku } });
 
   if (existing) {
-    throw new Error("SKU Exists");
+    throw new Error("SKU_EXISTS");
   }
 
   return prisma.product.create({
@@ -49,11 +49,6 @@ export async function getProducts(filters = {}) {
   if (filters.category) where.category = filters.category;
   if (filters.needsReview) where.needsReview = true;
 
-  if (filters.lowStock) {
-    where.currentStock = {
-      lte: prisma.product.fields.lowStockThreshold,
-    };
-  }
   if (filters.search) {
     where.OR = [
       { name: { contains: filters.search, mode: "insensitive" } },
@@ -61,11 +56,21 @@ export async function getProducts(filters = {}) {
       { aliases: { has: filters.search } },
     ];
   }
-  return prisma.product.findMany({
+
+  const products = await prisma.product.findMany({
     where,
     include: { brand: true },
     orderBy: { name: "asc" },
   });
+
+  // Prisma can't compare currentStock to lowStockThreshold (two columns
+  // on the same row) inside a `where` clause, so this filter is applied
+  // in JS after the fetch instead.
+  if (filters.lowStock) {
+    return products.filter((p) => p.currentStock <= p.lowStockThreshold);
+  }
+
+  return products;
 }
 
 export async function getProductById(id) {
@@ -80,7 +85,7 @@ export async function getProductById(id) {
 export async function updateProduct(id, data) {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
-    throw new Error("Product Not Found");
+    throw new Error("PRODUCT_NOT_FOUND");
   }
   return prisma.product.update({
     where: { id },

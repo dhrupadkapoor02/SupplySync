@@ -8,6 +8,10 @@ import InvoicesPage from "./features/invoices/InvoicesPage.jsx";
 import ProductsPage from "./features/products/ProductsPage.jsx";
 import OrdersPage from "./features/orders/OrdersPage.jsx";
 import RetailersPage from "./features/retailers/RetailersPage.jsx";
+import ShopPage from "./features/retailers/ShopPage.jsx";
+import BrandCatalogPage from "./features/retailers/BrandCatalogPage.jsx";
+import CartPage from "./features/retailers/CartPage.jsx";
+import RetailerOrdersPage from "./features/retailers/RetailerOrdersPage.jsx";
 
 export default function App() {
   const { user } = useAuth();
@@ -32,12 +36,45 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/shop"
+        element={
+          <ProtectedRoute>
+            <ShopPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shop/brand/:brandId"
+        element={
+          <ProtectedRoute>
+            <BrandCatalogPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shop/cart"
+        element={
+          <ProtectedRoute>
+            <CartPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shop/orders"
+        element={
+          <ProtectedRoute>
+            <RetailerOrdersPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/"
         element={
           user?.role === "ADMIN" ? (
             <Navigate to="/admin" replace />
+          ) : user?.status === "APPROVED" ? (
+            <Navigate to="/shop" replace />
           ) : (
             <Navigate to="/login" replace />
           )

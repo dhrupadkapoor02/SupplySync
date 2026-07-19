@@ -13,6 +13,6 @@ adminOrderRouter.patch("/:id/status", orderController.updateOrderStatus);
 
 retailerOrderRouter.post("/", orderController.placeOrder);
 retailerOrderRouter.get("/", orderController.getOrdersForRetailer);
-retailerOrderRouter.get("/:id", orderController.getOrderById);
+retailerOrderRouter.get("/:id", orderController.getOrderByIdForRetailer);
 
 export default adminOrderRouter;

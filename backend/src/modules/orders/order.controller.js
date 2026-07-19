@@ -85,6 +85,22 @@ export async function fulfillOrder(req, res) {
   }
 }
 
+export async function getOrderByIdForRetailer(req, res) {
+  try {
+    const order = await orderService.getOrderByIdForRetailer(
+      req.params.id,
+      req.user.userId,
+    );
+    return res.status(200).json(order);
+  } catch (error) {
+    if (error.message === "ORDER_NOT_FOUND") {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    console.error("getOrderByIdForRetailer error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 export async function getOrdersForRetailer(req, res) {
   try {
     const orders = await orderService.getOrdersForRetailer(req.user.userId);

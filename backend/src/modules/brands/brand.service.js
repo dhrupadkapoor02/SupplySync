@@ -6,7 +6,7 @@ export async function createBrand(data) {
   });
 
   if (existing) {
-    throw new Error("Brand Exists");
+    throw new Error("BRAND_EXISTS");
   }
 
   return prisma.brand.create({
@@ -42,19 +42,19 @@ export async function getBrandById(id) {
   });
 
   if (!brand) {
-    throw new Error("Brand Not Found");
+    throw new Error("BRAND_NOT_FOUND");
   }
 
   return brand;
 }
 
 export async function updateBrand(id, data) {
-  const brand = await prisma.findUnique({
+  const brand = await prisma.brand.findUnique({
     where: { id },
   });
 
   if (!brand) {
-    throw new Error("Brand Not Found");
+    throw new Error("BRAND_NOT_FOUND");
   }
 
   return prisma.brand.update({

@@ -28,6 +28,9 @@ export async function getBrandById(req, res) {
     const brand = await brandService.getBrandById(req.params.id);
     return res.status(200).json(brand);
   } catch (error) {
+    if (error.message === "BRAND_NOT_FOUND") {
+      return res.status(404).json({ message: "Brand not found" });
+    }
     console.error("getBrandById error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }

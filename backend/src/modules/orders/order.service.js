@@ -289,6 +289,30 @@ export async function fulfillOrder(
   });
 }
 
+export async function getOrderByIdForRetailer(orderId, retailerId) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            include: { brand: true },
+          },
+        },
+      },
+    },
+  });
+
+  // Ownership check: a retailer may only view their own orders.
+  // Deliberately returns the same ORDER_NOT_FOUND error as a missing
+  // order so this endpoint doesn't leak whether an order ID exists.
+  if (!order || order.retailerId !== retailerId) {
+    throw new Error("ORDER_NOT_FOUND");
+  }
+
+  return order;
+}
+
 export async function getOrdersForRetailer(retailerId) {
   return prisma.order.findMany({
     where: { retailerId },

@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../../lib/api.js';
+import { createContext, useContext, useState, useEffect } from "react";
+import api from "../../lib/api.js";
 
 const AuthContext = createContext(null);
 
@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
     if (stored) {
       setUser(JSON.parse(stored));
     }
@@ -16,25 +16,34 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function sendOTP(phone) {
-    await api.post('/auth/send-otp', { phone });
+    const { data } = await api.post("/auth/send-otp", { phone });
+
+    if (data.otp) {
+      console.log(
+        `%c[DEV MODE] OTP for ${phone}: ${data.otp}`,
+        "color: #10b981; font-weight: bold; font-size: 14px;",
+      );
+    }
+
+    return data;
   }
 
   async function verifyOTP(phone, otp) {
-    const { data } = await api.post('/auth/verify-otp', { phone, otp });
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    const { data } = await api.post("/auth/verify-otp", { phone, otp });
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+    localStorage.setItem("user", JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   }
 
   async function logout() {
     try {
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       setUser(null);
     }
   }
@@ -48,6 +57,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }

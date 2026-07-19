@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./features/auth/AuthContext.jsx";
 import "./index.css";
 import App from "./App.jsx";
+import { CartProvider } from "./features/retailers/CartContext.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +21,9 @@ createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
