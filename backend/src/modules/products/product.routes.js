@@ -13,7 +13,11 @@ adminProductRouter.post("/:id/custom-price", productController.setCustomPrice);
 
 // Retailer: read-only catalog browsing
 export const retailerProductRouter = Router();
-retailerProductRouter.get("/retailer/catalog", productController.getProductsForRetailer);
+retailerProductRouter.get("/", productController.getProductsForRetailer);
+retailerProductRouter.get(
+  "/retailer/catalog",
+  productController.getProductsForRetailer,
+);
 retailerProductRouter.get("/:id", productController.getProductById);
 
 export default adminProductRouter;
